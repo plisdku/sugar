@@ -1,6 +1,10 @@
 project( Sugar )
 
-cmake_minimum_required(VERSION 2.4.5)
+cmake_minimum_required(VERSION 3.1)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ------------------ Boilerplate 
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
@@ -10,41 +14,34 @@ if ( COMMAND cmake_policy )
 endif()
 
 
+# ==== Packages
+
+find_package(Eigen3 REQUIRED NO_MODULE)
+
+message("Eigen: ${EIGEN3_INCLUDE_DIR}")
+
+if (TARGET Eigen3::Eigen)
+  # Use the imported target
+else()
+  message("FUCK")
+endif()
+
+
+#include_directories( ${EIGEN3_INCLUDE_DIR} )
+
 # RPATH issue
-
-#set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_MACOSX_RPATH TRUE)
-#set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # TRUE
-#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
 
 # Include...
 include_directories(
     /usr/local/include
+    ${EIGEN3_INCLUDE_DIR}
 )
-
-# Lib
-#link_directories(
-#    /usr/local/lib
-#)
-
 add_library( sugar SHARED
     sugar.cpp
     sugar.h
 )
-#target_link_libraries(stkcontrol stk)
-
-
-#message( "Doing really stupid thing" )
-#add_custom_command(TARGET stkcontrol 
-#    POST_BUILD COMMAND 
-#    ${CMAKE_INSTALL_NAME_TOOL} -change libstk-4.6.0.dylib /usr/local/lib/libstk-4.6.0.dylib 
-#    #${CMAKE_INSTALL_NAME_TOOL} -change libstk.dylib /usr/local/lib/libstk.dylib 
-#    $<TARGET_FILE:stkcontrol>)
-
+target_link_libraries(sugar PUBLIC Eigen3::Eigen)
 
 add_executable( tester
     main.cpp
@@ -52,4 +49,6 @@ add_executable( tester
 target_link_libraries(tester sugar )
 
 
-#install(TARGETS stkcontrol DESTINATION /usr/local/lib)
+
+
+

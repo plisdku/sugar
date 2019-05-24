@@ -1,7 +1,20 @@
-import stkcontrol
+import numpy as np
 
-stkcontrol.note(0, 0, 1.0, 50)
-stkcontrol.note(1, 1, 1.0, 60)
-stkcontrol.note(3, 2, 1.0, 70)
-# stkcontrol.stop(4)
-stkcontrol.write_wav("mywav.wav", 44100)
+import sugar
+
+
+
+def main():
+    print("HI!")
+    sugar.initialize()
+
+    y = sugar.sugar_sum(np.arange(10.0))
+    print("y =", y)
+
+
+
+
+if __name__ == "__main__":
+    main()
+
+

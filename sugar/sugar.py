@@ -1,83 +1,25 @@
 import ctypes
+import os
 
-# ctypes.cdll.LoadLibrary("build/libstkcontrol.dylib")
-# _lib = ctypes.CDLL("build/libstkcontrol.dylib")
-ctypes.cdll.LoadLibrary("/usr/local/lib/libstkcontrol.dylib")
-_lib = ctypes.CDLL("/usr/local/lib/libstkcontrol.dylib")
+import numpy as np
 
-# initialize(sampleRateHz)
-_initialize = _lib.initialize
-_initialize.argtypes = [ctypes.c_double]
+file_dir = os.path.os.path.dirname(__file__)
+pkg_root = os.path.abspath(os.path.join(file_dir, "../"))
+dylib_dir = os.path.join(pkg_root, "build")
+dylib_path = os.path.join(dylib_dir, "libsugar.dylib")
 
-# shutdown()
-_shutdown = _lib.shutdown
+# print(file_dir, pkg_root, dylib_dir, dylib_path)
 
-# pushOn(id, time, frequency, amplitude)
-_pushOn = _lib.pushOn
-_pushOn.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_float]
+ctypes.cdll.LoadLibrary(dylib_path)
+_lib = ctypes.CDLL(dylib_path)
 
-# pushOff(id, time, frequency, amplitude)
-_pushOff = _lib.pushOff
-_pushOff.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_float]
+initialize = _lib.initialize
+# initialize.argtypes = []
+# initialize.restype = ctypes.
 
-# pushStop()
-_pushStop = _lib.pushStop
+sum_double_np_array = _lib.sum_double_np_array
+sum_double_np_array.argtypes = [np.ctypeslib.ndpointer(dtype=np.float64), ctypes.c_int]
+sum_double_np_array.restype = ctypes.c_double
 
-# writeWav(fileName)
-_writeWav = _lib.writeWav
-
-
-class stk_command(object):
-
-    def __init__(self, in_type, in_in_id, in_time, in_freq, in_ampl):
-        self.type = in_type
-        self.in_id = in_in_id
-        self.time = in_time
-        self.freq = in_freq
-        self.ampl = in_ampl
-
-_commands = []
-
-def note(in_id, in_time_s, duration_s, midi=None, onset_ampl=0.5, offset_ampl = 0.5):
-
-    freq = 440.0 * (2.0 ** ((midi-69)/12.0))
-
-    _commands.append(stk_command("on", in_id, in_time_s, freq, onset_ampl))
-    _commands.append(stk_command("off", in_id, in_time_s+duration_s, freq, offset_ampl))
-
-def stop(in_time_s):
-    _commands.append(stk_command("stop", 0, in_time_s, 440.0, 1.0))
-
-def write_wav(fileName, sampleRateHz):
-    global _commands
-
-    sorted_commands = sorted(_commands, key=lambda x: x.time)
-
-    if sorted_commands[-1].type != "stop":
-        sorted_commands.append(stk_command("stop", 0, sorted_commands[-1].time + 4.0, 440.0, 1.0))
-
-    # for ss in sorted_commands:
-    #     print ss.time, ss.type, "in_id", ss.in_id, "freq", ss.freq, "ampl", ss.ampl
-
-    _initialize(sampleRateHz)
-
-        # in_id time freq ampl
-    for ss in sorted_commands:
-        if ss.type == "on":
-            # print ss.time, int(ss.time * sampleRateHz)
-            _pushOn(ss.in_id, int(ss.time * sampleRateHz), ss.freq, ss.ampl)
-        elif ss.type == "off":
-            # print int(ss.time * sampleRateHz)
-            _pushOff(ss.in_id, int(ss.time * sampleRateHz), ss.freq, ss.ampl)
-        elif ss.type == "stop":
-            _pushStop(int(ss.time * sampleRateHz))
-
-    _writeWav(fileName)
-
-    _shutdown()
-
-    _commands = []
-
-
-instrument_names = ["clarinet", "mandolin", "plucked", "flute"]
-
+def sugar_sum(x):
+    return sum_double_np_array(x, len(x))
