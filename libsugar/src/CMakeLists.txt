@@ -21,9 +21,8 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 message("Eigen: ${EIGEN3_INCLUDE_DIR}")
 
 if (TARGET Eigen3::Eigen)
-  # Use the imported target
 else()
-  message("FUCK")
+  message("Cannot find Eigen I guess")
 endif()
 
 
